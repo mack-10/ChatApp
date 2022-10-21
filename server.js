@@ -13,7 +13,7 @@ console.log(`HTTP Server running : ${APP_PORT}`);
 function requestHandler(request, response) {
 	console.log(`Received request for ${request.url}`);
 
-	let filePath = './client' + request.url;
+	const filePath = './client' + request.url;
 	if (filePath == './client/') {
 		// Serve index.html on request
 		filePath = './client/index.html';
@@ -53,4 +53,3 @@ function requestHandler(request, response) {
 		}
 	})
 }
-
