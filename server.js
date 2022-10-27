@@ -1,19 +1,20 @@
-import http, { request } from 'http';
+import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import { Server } from 'socket.io';
 
 // Set Port(3000)
 const APP_PORT = process.env.APP_PORT || 3000;
 const app = http.createServer(requestHandler);
 
 app.listen(APP_PORT);
-console.log(`HTTP Server running : ${APP_PORT}`);
+console.log(`🖥  HTTP Server running : ${APP_PORT}`);
 
 // Handle all request to the server
 function requestHandler(request, response) {
-	console.log(`Received request for ${request.url}`);
+	console.log(`🖥  Received request for ${request.url}`);
 
-	const filePath = './client' + request.url;
+	let filePath = './client' + request.url;
 	if (filePath == './client/') {
 		// Serve index.html on request
 		filePath = './client/index.html';
@@ -21,7 +22,7 @@ function requestHandler(request, response) {
 
 	// Filename
 	const extname = String(path.extname(filePath)).toLowerCase();
-	console.log(`Serving ${filePath}`);
+	console.log(`🖥  Serving ${filePath}`);
 
 	const mimeTypes = {
 		'.html': 'text/html',
@@ -53,3 +54,25 @@ function requestHandler(request, response) {
 		}
 	})
 }
+
+// SOCKET.IO
+const io = new Server(app, {
+	path: '/socket.io',
+});	
+
+// attach socket.io to our web server
+io.attach(app, {
+	// includes local domain to avoid CORS error locally
+	// configure it accordingly for production
+	cors: {
+		origin: 'http://localhost',
+		methods: ['GET', 'POST'],
+		credentials: true,
+		transports: ['websocket', 'polling']
+	},
+	allowEI03: true
+});
+
+io.on('connection', (socket) => {
+	console.log('🔗  New Socket connected! >>', socket.id);
+})
