@@ -1,2 +1,2 @@
 # ChatApp
-Node.js, Websockets API
+Node.js, Websockets API(Socket.io)
