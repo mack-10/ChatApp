@@ -24,6 +24,7 @@ function requestHandler(request, response) {
 	const extname = String(path.extname(filePath)).toLowerCase();
 	console.log(`🖥  Serving ${filePath}`);
 
+	// MIME setting
 	const mimeTypes = {
 		'.html': 'text/html',
 		'.js' : 'text/javascript',
@@ -36,19 +37,18 @@ function requestHandler(request, response) {
 
 	const contentType = mimeTypes[extname] || 'application/octet-stream';
 	fs.readFile(filePath, function (error, content) {
-		if (error) {
-			// 404
+		if (error) { // 404 Not Found			
 			if (error.cond == 'ENOENT') {
 				fs.readFile('./client/404.html', function(error, content) {
 					// Set header
 					response.writeHead(404, { 'Content-type': contentType });
 					response.end(content, 'utf-8');
 				})
-			} else {
+			} else { // 500 Internal Server Error
 				response.writeHead(500);
 				response.end('Sorry, there was an error: ' + error.code + '..\n');
 			}
-		} else {
+		} else { // 200 Request success
 			response.writeHead(200, { 'Content-Type': contentType });
 			response.end(content, 'utf-8');
 		}
@@ -56,23 +56,25 @@ function requestHandler(request, response) {
 }
 
 // SOCKET.IO
+// constructor(srv?: http.Server | HTTPSServer | Http2SecureServer | number, opts?: Partial<ServerOptions>);
 const io = new Server(app, {
 	path: '/socket.io',
 });	
 
 // attach socket.io to our web server
 io.attach(app, {
-	// includes local domain to avoid CORS error locally
-	// configure it accordingly for production
 	cors: {
 		origin: 'http://localhost',
 		methods: ['GET', 'POST'],
 		credentials: true,
-		transports: ['websocket', 'polling']
 	},
+	// Socket.io's default transports['websocket', 'polling']
+	// Don't need to write -> transports: ['websocket', 'polling'],
 	allowEI03: true
 });
 
+
+// 클라이언트
 io.on('connection', (socket) => {
 	console.log('🔗  New Socket connected! >>', socket.id);
 })
