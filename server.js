@@ -61,20 +61,35 @@ const io = new Server(app, {
 	path: '/socket.io',
 });	
 
-// attach socket.io to our web server
+// Attach socket.io to our web server
 io.attach(app, {
 	cors: {
 		origin: 'http://localhost',
 		methods: ['GET', 'POST'],
 		credentials: true,
+		// Socket.io's default transports['websocket', 'polling']
+		// So, don't need to write -> transports: ['websocket', 'polling'],
 	},
-	// Socket.io's default transports['websocket', 'polling']
-	// Don't need to write -> transports: ['websocket', 'polling'],
 	allowEI03: true
 });
 
+const users = {};
 
-// 클라이언트
 io.on('connection', (socket) => {
 	console.log('🔗  New Socket connected! >>', socket.id);
-})
+
+	// Handles new connection
+	// Receive new-connection event from the chat.js(Client)
+	socket.on("new-connection", (data) => {
+		// Captures event when new clients join
+		console.log(`new-connection event received`, data);
+		// Add user to list
+		users[socket.id] = data.username;
+		console.log("users >>", users);
+		// Emit welcome message event
+		socket.emit("welcome-message", {
+			user: "server",
+			message: `Welcome to this Socket.io chat ${data.username}. There are ${Object.keys(users).length} users connected`,
+		});
+	});
+});
